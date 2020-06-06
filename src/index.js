@@ -181,12 +181,41 @@ export default class ColyseusIonAdapter {
         return avatar && avatar.gltfs && avatar.gltfs.avatar;
     }
 
+    getScene(sceneId) {
+        const scenes = this.roomData.scenes.entries;
+        for (let i=0; i<scenes.length; i++) {
+            if (scenes[i].id === sceneId) {
+                return scenes[i];
+            }
+        }
+    }
+
+    checkSameScene(presence) {
+        return (this.roomData &&
+            (this.roomData.scene.scene_id === presence.sceneId ||
+                (this.roomData.scene.scene_id === this.roomData.scenes.entries[0].id && presence.sceneId === "lobby")));
+    }
+
+    canEnterRoom(hub) {
+        if (!hub) return false;
+
+        const roomEntrySlotCount = Object.values(this.players).reduce((acc, { presence }) => {
+            const usingSlot = presence.presence === "room" || presence.entering;
+            return acc + (usingSlot ? 1 : 0);
+        }, 0);
+
+        // This now exists in room settings but a default is left here to support old reticulum servers
+        const DEFAULT_ROOM_SIZE = 24;
+        return roomEntrySlotCount < (hub.room_size !== undefined ? hub.room_size : DEFAULT_ROOM_SIZE);
+    }
+
     onNaf(data) {
         this.onData(data.sessionId, data.type, data.data);
     }
 
     onChat(data) {
-        this.onData(data.sessionId, "chat", data.message, data.from);
+        const detail = { sessionId: data.sessionId, message: data.message, from: data.from };
+        document.body.dispatchEvent(new CustomEvent("chat", { detail }))
     }
 
     onData(sessionId, type, data, from) {
@@ -225,7 +254,9 @@ export default class ColyseusIonAdapter {
                 }
             });
         };
-        this.openListener(sessionId);
+        if (sessionId === this.sessionId || this.checkSameScene(player.presence)) {
+            this.openListener(sessionId);
+        }
         if (this.occupantListener) {
             this.occupantListener(this.players);
         }
@@ -254,6 +285,25 @@ export default class ColyseusIonAdapter {
     }
 
     onChangePresence(presence, prevPresence, sessionId) {
+        if (sessionId === this.sessionId) {
+            for (let sid in this.players) {
+                if (sid === sessionId) continue;
+                if (this.checkSameScene(this.players[sid].presence)) {
+                    this.openListener(sid);
+                }
+                else {
+                    this.closedListener(sid);
+                }
+            }
+        }
+        else {
+            if (this.checkSameScene(presence)) {
+                this.openListener(sessionId);
+            }
+            else {
+                this.closedListener(sessionId);
+            }
+        }
         const detail = { sessionId, presence, previous: prevPresence };
         document.body.dispatchEvent(new CustomEvent("presence_updated", { detail }));
     }
@@ -273,10 +323,14 @@ export default class ColyseusIonAdapter {
     sendEntered() {
         const presence = {
             presence: "room",
-            scene: this.roomData.scene.name,
+            sceneId: this.roomData.scene.scene_id,
             entering: false
         };
         this.update({ presence: presence });
+    }
+
+    sendObjectSpawned(type) {
+
     }
 
     onIonOpen() {
