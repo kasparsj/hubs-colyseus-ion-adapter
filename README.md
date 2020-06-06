@@ -1,0 +1,3 @@
+A custom backend adapter for Mozilla Hubs, built with Colyseus and Ion
+
+Work in progress....
