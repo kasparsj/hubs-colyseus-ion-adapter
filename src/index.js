@@ -196,6 +196,18 @@ export default class ColyseusIonAdapter {
                 (this.roomData.scene.scene_id === this.roomData.scenes.entries[0].id && presence.sceneId === "lobby")));
     }
 
+    updateScene(sceneId) {
+        if (sceneId === this.roomData.scene.scene_id) return;
+        const scene = this.getScene(sceneId);
+        if (scene) {
+            Object.keys(scene).forEach(key => this.roomData.scene[key] = scene[key]);
+            this.roomData.scene.model_url = scene.url;
+            this.roomData.scene.scene_id = scene.id;
+            this.roomData.scene.objects_url = scene.objects_url;
+            document.body.dispatchEvent(new CustomEvent("change_scene"))
+        }
+    }
+
     canEnterRoom(hub) {
         if (!hub) return false;
 
