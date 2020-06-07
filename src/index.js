@@ -17,7 +17,6 @@ export default class ColyseusIonAdapter {
         this.room = null;
         this.roomData = null;
         this.userData = null;
-        this.sessionId = null;
 
         this.players = {};
         this.streams = null;
@@ -132,7 +131,6 @@ export default class ColyseusIonAdapter {
 
     onJoin(room) {
         this.room = room;
-        this.sessionId = room.sessionId;
         room.onMessage("roomData", this.onRoomData.bind(this));
         room.onMessage("userData", this.onUserData.bind(this));
         room.onMessage("naf", this.onNaf.bind(this));
@@ -153,6 +151,22 @@ export default class ColyseusIonAdapter {
         this.connectFailure();
         const detail = { reason: "join_denied" };
         document.body.dispatchEvent(new CustomEvent("connect_error", { detail }));
+    }
+
+    get sessionId() {
+        return this.room.sessionId;
+    }
+
+    get player() {
+        this.players[this.sessionId];
+    }
+
+    get scene() {
+        return this.roomData.scene;
+    }
+
+    get sceneId() {
+        return this.roomData.scene.scene_id;
     }
 
     onRoomData(data) {
@@ -342,6 +356,10 @@ export default class ColyseusIonAdapter {
 
     sendObjectSpawned(type) {
 
+    }
+
+    pin(gltfNode) {
+        this.room.send('pin', gltfNode);
     }
 
     onIonOpen() {
