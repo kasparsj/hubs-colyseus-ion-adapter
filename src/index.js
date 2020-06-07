@@ -150,10 +150,9 @@ export default class ColyseusIonAdapter {
     }
 
     onJoinError(err) {
-        console.error("Socket connection failure", err);
-        if (this.connectFailure) {
-            this.connectFailure();
-        }
+        this.connectFailure();
+        const detail = { reason: "join_denied" };
+        document.body.dispatchEvent(new CustomEvent("connect_error", { detail }));
     }
 
     onRoomData(data) {
