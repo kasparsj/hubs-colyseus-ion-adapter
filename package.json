@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "colyseus.js": "file:../colyseus.js",
+    "colyseus.js": "file:../colyseus/colyseus.js",
     "ion-sdk-js": "^0.3.7"
   },
   "devDependencies": {
