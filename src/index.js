@@ -367,8 +367,12 @@ export default class ColyseusIonAdapter {
 
     }
 
-    pin(data) {
-        this.room.send('pin', data);
+    pin(networkId, gltfNode, fileId, fileAccessToken, promotionToken) {
+        this.room.send('pin', { networkId, gltfNode, fileId });
+    }
+
+    unpin(networkId, fileId) {
+        this.room.send('unpin', { networkId, fileId });
     }
 
     onIonOpen() {
