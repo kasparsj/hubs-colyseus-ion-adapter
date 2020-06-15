@@ -54,8 +54,8 @@ export default class ColyseusIonAdapter {
         this.app = appName;
     }
 
-    setRoom(roomName) {
-        this.roomName = roomName;
+    setRoom(roomId) {
+        this.roomId = roomId;
     }
 
     setOptions(options) {
@@ -115,8 +115,11 @@ export default class ColyseusIonAdapter {
         return Promise.all([colyseusConnection, this.updateTimeOffset()]);
     }
 
-    joinRoom(options) {
-        NAF.log.write("Joining room", this.roomName);
+    joinRoom() {
+        NAF.log.write("Joining room", this.roomName, this.roomId);
+        const options = {
+            roomId: this.roomId
+        };
         if (this.options.createRoom) {
             return this.colyseus.joinOrCreate(this.roomName, options)
                 .then(this.onJoin.bind(this))
@@ -142,6 +145,7 @@ export default class ColyseusIonAdapter {
             room.state.players.onAdd = this.onAddPlayer.bind(this);
             room.state.players.onRemove = this.onRemovePlayer.bind(this);
         }
+        this.connectSuccess(this.sessionId);
         if (this.ionState >= IonState.OPEN) {
             this.joinIon();
         }
@@ -171,13 +175,14 @@ export default class ColyseusIonAdapter {
 
     onRoomData(data) {
         this.roomData = data;
-        if (this.connectSuccess) {
-            this.connectSuccess(this.sessionId);
-        }
+        const detail = data;
+        document.body.dispatchEvent(new CustomEvent("room_data", { detail }));
     }
 
     onUserData(data) {
         this.userData = data;
+        const detail = data;
+        document.body.dispatchEvent(new CustomEvent("user_data", { detail }));
     }
 
     getAvatar(avatarId) {
@@ -333,6 +338,10 @@ export default class ColyseusIonAdapter {
         document.body.dispatchEvent(new CustomEvent("presence_updated", { detail }));
     }
 
+    signIn(token) {
+        this.room.send('sign_in', token);
+    }
+
     update(data) {
         this.room.send('update', data);
     }
@@ -358,8 +367,8 @@ export default class ColyseusIonAdapter {
 
     }
 
-    pin(gltfNode) {
-        this.room.send('pin', gltfNode);
+    pin(data) {
+        this.room.send('pin', data);
     }
 
     onIonOpen() {
