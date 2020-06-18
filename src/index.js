@@ -250,7 +250,7 @@ export default class ColyseusIonAdapter {
 
     onData(sessionId, type, data, from) {
         if (this.frozen) {
-            this.storeMessage(message);
+            this.storeMessage(data);
         }
         else {
             this.messageListener(sessionId, type, data, from);
