@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "colyseus.js": "file:../colyseus/colyseus.js",
-    "ion-sdk-js": "git+ssh://git@github.com/kasparsj/ion-sdk-js.git#patch-safari"
+    "ion-sdk-js": "file:../ion-sdk-js"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
